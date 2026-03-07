@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/gallery"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    android:orientation="vertical"
+    android:background="@color/white"
+    >
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarGALLERY"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        app:layout_constraintTop_toTopOf="parent"
+
+        android:background="@color/blue"
+        app:title="PROFILE PICKER"
+        />
+
+    <!-- Might need a back button? Depends on if gallery is okay with going back automatically (via hardware) -->
+
+    <!-- FOR BUTTON!!! -> if an image is selected, have button become clickable and change backgroundTint to color/green and textColor to white -->
+    <Button
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+
+        android:text="Select"
+        android:textSize="18sp"
+        android:backgroundTint="@color/dark_grey"
+        android:textColor="@color/grey"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerGallery"
+        android:layout_width="383dp"
+        android:layout_height="wrap_content"
+
+        android:layout_margin="8dp"
+        />
+
+</LinearLayout>
