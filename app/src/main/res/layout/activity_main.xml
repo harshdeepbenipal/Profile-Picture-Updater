@@ -21,72 +21,57 @@
         app:title="PROFILE PICKER"
         />
 
+    <!-- ImageView be invisible until an action is done?-->
+
+    <!-- Button for 'using picture' be invisible until an action is done?-->
+
     <Button
         android:id="@+id/PhotoButton"
         android:layout_width="300dp"
         android:layout_height="70dp"
 
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        android:layout_marginTop="30dp"
-
+        android:layout_marginTop="48dp"
         android:text="Take Photo"
+
         android:textSize="20sp"
-        />
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ImageDisplay" />
 
     <Button
         android:id="@+id/FileButton"
         android:layout_width="300dp"
         android:layout_height="70dp"
 
-        app:layout_constraintTop_toBottomOf="@id/PhotoButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        android:layout_marginTop="30dp"
-
+        android:layout_marginTop="32dp"
         android:text="Select from Gallery"
         android:textSize="20sp"
-        />
 
-    <!-- ImageView be invisible until an action is done?-->
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/PhotoButton" />
+
     <ImageView
         android:id="@+id/ImageDisplay"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="236dp"
+        android:layout_height="250dp"
+        android:layout_marginTop="64dp"
+        android:adjustViewBounds="true"
 
-        app:layout_constraintTop_toBottomOf="@id/FileButton"
-        app:layout_constraintStart_toStartOf="parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_pfp"
+
         app:layout_constraintEnd_toEndOf="parent"
-
-        android:layout_marginTop="50dp"
-
-        android:visibility="invisible"
-        />
-
-    <!-- Button for 'using picture' be invisible until an action is done?-->
-    <Button
-        android:id="@+id/UseButton"
-        android:layout_width="150dp"
-        android:layout_height="50dp"
-
-        app:layout_constraintTop_toBottomOf="@id/ImageDisplay"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        android:layout_marginTop="10dp"
-
-        android:text = "Use Picture"
-        android:textSize="18dp"
-        android:backgroundTint="@color/green"
-
-        android:visibility="invisible"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
 
-<!--    <TextView-->
+    <!--    <TextView-->
 <!--        android:id = "@+id/banner"-->
 <!--        android:layout_width="match_parent"-->
 <!--        android:layout_height="wrap_content"-->

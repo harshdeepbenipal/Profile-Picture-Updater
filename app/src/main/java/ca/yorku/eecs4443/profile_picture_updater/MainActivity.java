@@ -16,6 +16,16 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+
 public class MainActivity extends AppCompatActivity {
 
     // Button for taking a photo (camera)
@@ -23,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     // Button for opening photo gallery
     private Button galleryButton;
 
-    private Button useButton;
+    //private Button useButton;
     private ImageView displayImage;
 
     @Override
@@ -37,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        useButton = (Button) findViewById(R.id.UseButton);
+        //useButton = (Button) findViewById(R.id.UseButton);
 
         displayImage = (ImageView) findViewById(R.id.ImageDisplay);
 
@@ -45,9 +55,7 @@ public class MainActivity extends AppCompatActivity {
         // SETS USE BUTTON AND IMAGE VIEW INVISIBLE
         // HAVE IT ONLY BE VISIBLE WHEN AN IMAGE IS EITHER TAKEN ON CAMERA OR SELECTED FROM GALLERY
         // probably via intents
-        useButton.setVisibility(View.INVISIBLE);
-        displayImage.setVisibility(View.INVISIBLE);
-
+        //useButton.setVisibility(View.INVISIBLE);
 
 
         cameraButton = (Button) findViewById(R.id.PhotoButton);
@@ -60,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Toast.makeText(MainActivity.this, "Ask Camera Permission", Toast.LENGTH_SHORT).show();
 
-                requestPermissions("Camera");
+                checkPermissions("Camera");
 
                 // if permission granted
                 //Toast.makeText(MainActivity.this, "Camera allowed", Toast.LENGTH_SHORT).show();
@@ -78,17 +86,82 @@ public class MainActivity extends AppCompatActivity {
 
                 Toast.makeText(MainActivity.this, "Ask Gallery Permission", Toast.LENGTH_SHORT).show();
 
-                requestPermissions("Gallery");
+                checkPermissions("Gallery");
             }
         });
     }
 
-    // Looking at reference (can be changed later)
-        // geeksforgeeks.org/android/android-how-to-request-permissions-in-android-application/
-    private void requestPermissions(String media) {
-        //do permissions here
+    // Camera result launcher
+    private ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == RESULT_OK) {
 
-        //String media -> tell if permission is for "Camera" or "Gallery"
+            if (result.getData() != null) {
+
+                Bundle extras = result.getData().getExtras();
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
+
+                if (imageBitmap != null) {
+                    displayImage.setImageBitmap(imageBitmap);
+                }
+            }
+            //displayImage.setVisibility(View.VISIBLE);
+            //useButton.setVisibility(View.VISIBLE);
+        } else {
+            Toast.makeText(this, "Camera cancelled", Toast.LENGTH_SHORT).show();
+        }
+    });
+
+    // Gallery result launcher
+    private ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+            Uri imageUri = result.getData().getData();
+            displayImage.setImageURI(imageUri);
+
+            //displayImage.setVisibility(View.VISIBLE);
+            //useButton.setVisibility(View.VISIBLE);
+        } else {
+            Toast.makeText(this, "Gallery selection cancelled", Toast.LENGTH_SHORT).show();
+        }
+    });
+
+    private void checkPermissions(String media) {
+        if (media.equals("Camera")) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
+            }
+        }else if (media.equals("Gallery")) {
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+                openGallery();
+            } else {
+                requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES}, 200);
+            }
+        }
+    }
+    private void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(cameraIntent);
+    }
+    private void openGallery() {
+        Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        galleryIntent.setType("image/*");
+        galleryLauncher.launch(galleryIntent);
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (requestCode == 100) {
+                openCamera();
+            }
+            else if (requestCode == 200) {
+                openGallery();
+            }
+        } else {
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
