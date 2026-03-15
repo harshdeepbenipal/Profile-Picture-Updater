@@ -26,6 +26,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 
+import android.os.Build;
+
 public class MainActivity extends AppCompatActivity {
 
     // Button for taking a photo (camera)
@@ -66,8 +68,16 @@ public class MainActivity extends AppCompatActivity {
             if ("gallery".equals(currentImageSource)) {
                 String imageUriString = savedInstanceState.getString(KEY_IMAGE_URI);
                 if (imageUriString != null) {
-                    currentImageUri = Uri.parse(imageUriString);
-                    displayImage.setImageURI(currentImageUri);
+                    try {
+                        currentImageUri = Uri.parse(imageUriString);
+                        displayImage.setImageURI(currentImageUri);
+                    }
+                    //in case the image fails to load
+                    catch (Exception e) {
+                        currentImageUri = null;
+                        currentImageSource = null;
+                        Toast.makeText(this, "Failed to restore gallery image", Toast.LENGTH_SHORT).show();
+                    }
                 }
             } else if ("camera".equals(currentImageSource)) {
                 Bitmap restoredBitmap = savedInstanceState.getParcelable(KEY_IMAGE_BITMAP);
@@ -119,12 +129,11 @@ public class MainActivity extends AppCompatActivity {
 
     // Camera result launcher
     private ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        if (result.getResultCode() == RESULT_OK) {
+        //if RESULT_OK happens but getData() is null
+        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
 
-            if (result.getData() != null) {
-
-                Bundle extras = result.getData().getExtras();
-                if (extras != null) {
+            Bundle extras = result.getData().getExtras();
+            if (extras != null) {
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
 
                 if (imageBitmap != null) {
@@ -132,17 +141,15 @@ public class MainActivity extends AppCompatActivity {
                     currentImageUri = null;
                     currentImageSource = "camera";
                     displayImage.setImageBitmap(imageBitmap);
+                    Toast.makeText(this, "Camera image loaded", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(this, "Invalid camera image", Toast.LENGTH_SHORT).show();
                 }
-                } else {
-                    Toast.makeText(this, "No camera data received", Toast.LENGTH_SHORT).show();
-                }
+            } else {
+                Toast.makeText(this, "No camera data received", Toast.LENGTH_SHORT).show();
             }
-            //displayImage.setVisibility(View.VISIBLE);
-            //useButton.setVisibility(View.VISIBLE);
         } else {
-            Toast.makeText(this, "Camera cancelled", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Camera cancelled or no image returned", Toast.LENGTH_SHORT).show();
         }
     });
 
@@ -156,6 +163,8 @@ public class MainActivity extends AppCompatActivity {
                 currentBitmap = null;
                 currentImageSource = "gallery";
                 displayImage.setImageURI(imageUri);
+                //display toast for success as well
+                Toast.makeText(this, "Gallery image loaded", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Invalid gallery image", Toast.LENGTH_SHORT).show();
             }
@@ -176,21 +185,43 @@ public class MainActivity extends AppCompatActivity {
             }
         }else if (media.equals("Gallery")) {
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+            //   Android 13+ uses READ_MEDIA_IMAGES
+            // older versions use READ_EXTERNAL_STORAGE
+            String permission;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permission = Manifest.permission.READ_MEDIA_IMAGES;
+            } else {
+                permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            }
+
+            if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
                 openGallery();
             } else {
-                requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES}, 200);
+                requestPermissions(new String[]{permission}, 200);
             }
         }
     }
     private void openCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraLauncher.launch(cameraIntent);
+
+        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+            cameraLauncher.launch(cameraIntent);
+        }
+        // test checking to prevent faail
+        else {
+            Toast.makeText(this, "No camera app available", Toast.LENGTH_SHORT).show();
+        }
     }
     private void openGallery() {
         Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
         galleryIntent.setType("image/*");
-        galleryLauncher.launch(galleryIntent);
+
+        //if else block to prevent crashes
+        if (galleryIntent.resolveActivity(getPackageManager()) != null) {
+            galleryLauncher.launch(galleryIntent);
+        } else {
+            Toast.makeText(this, "No gallery app available", Toast.LENGTH_SHORT).show();
+        }
     }
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -208,15 +239,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             if (requestCode == 100) {
                 openCamera();
-            }
-            else if (requestCode == 200) {
+            } else if (requestCode == 200) {
                 openGallery();
             }
-        } else {
-            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+        }
+        //displaying toasts for denied permissions
+        else {
+            if (requestCode == 100) {
+                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
+            } else if (requestCode == 200) {
+                Toast.makeText(this, "Gallery permission denied", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
