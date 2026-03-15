@@ -36,6 +36,14 @@ public class MainActivity extends AppCompatActivity {
     //private Button useButton;
     private ImageView displayImage;
 
+    private Uri currentImageUri = null;
+    private Bitmap currentBitmap = null;
+    private String currentImageSource = null;
+
+    private static final String KEY_IMAGE_URI = "key_image_uri";
+    private static final String KEY_IMAGE_BITMAP = "key_image_bitmap";
+    private static final String KEY_IMAGE_SOURCE = "key_image_source";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +59,24 @@ public class MainActivity extends AppCompatActivity {
 
         displayImage = (ImageView) findViewById(R.id.ImageDisplay);
 
+        //restore image after orientation change/ recreation
+        if (savedInstanceState != null) {
+            currentImageSource = savedInstanceState.getString(KEY_IMAGE_SOURCE);
+
+            if ("gallery".equals(currentImageSource)) {
+                String imageUriString = savedInstanceState.getString(KEY_IMAGE_URI);
+                if (imageUriString != null) {
+                    currentImageUri = Uri.parse(imageUriString);
+                    displayImage.setImageURI(currentImageUri);
+                }
+            } else if ("camera".equals(currentImageSource)) {
+                Bitmap restoredBitmap = savedInstanceState.getParcelable(KEY_IMAGE_BITMAP);
+                if (restoredBitmap != null) {
+                    currentBitmap = restoredBitmap;
+                    displayImage.setImageBitmap(currentBitmap);
+                }
+            }
+        }
 
         // SETS USE BUTTON AND IMAGE VIEW INVISIBLE
         // HAVE IT ONLY BE VISIBLE WHEN AN IMAGE IS EITHER TAKEN ON CAMERA OR SELECTED FROM GALLERY
@@ -98,10 +124,19 @@ public class MainActivity extends AppCompatActivity {
             if (result.getData() != null) {
 
                 Bundle extras = result.getData().getExtras();
+                if (extras != null) {
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
 
                 if (imageBitmap != null) {
+                    currentBitmap = imageBitmap;
+                    currentImageUri = null;
+                    currentImageSource = "camera";
                     displayImage.setImageBitmap(imageBitmap);
+                } else {
+                    Toast.makeText(this, "Invalid camera image", Toast.LENGTH_SHORT).show();
+                }
+                } else {
+                    Toast.makeText(this, "No camera data received", Toast.LENGTH_SHORT).show();
                 }
             }
             //displayImage.setVisibility(View.VISIBLE);
@@ -115,7 +150,15 @@ public class MainActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == RESULT_OK && result.getData() != null) {
             Uri imageUri = result.getData().getData();
-            displayImage.setImageURI(imageUri);
+
+            if (imageUri != null) {
+                currentImageUri = imageUri;
+                currentBitmap = null;
+                currentImageSource = "gallery";
+                displayImage.setImageURI(imageUri);
+            } else {
+                Toast.makeText(this, "Invalid gallery image", Toast.LENGTH_SHORT).show();
+            }
 
             //displayImage.setVisibility(View.VISIBLE);
             //useButton.setVisibility(View.VISIBLE);
@@ -149,6 +192,19 @@ public class MainActivity extends AppCompatActivity {
         galleryIntent.setType("image/*");
         galleryLauncher.launch(galleryIntent);
     }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(KEY_IMAGE_SOURCE, currentImageSource);
+
+        if ("gallery".equals(currentImageSource) && currentImageUri != null) {
+            outState.putString(KEY_IMAGE_URI, currentImageUri.toString());
+        } else if ("camera".equals(currentImageSource) && currentBitmap != null) {
+            outState.putParcelable(KEY_IMAGE_BITMAP, currentBitmap);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
