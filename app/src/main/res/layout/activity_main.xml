@@ -10,6 +10,9 @@
     android:layout_gravity="center"
     tools:context=".MainActivity">
 
+    <!-- XML for profile picture layout -->
+
+    <!-- Top blue Bar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -21,10 +24,7 @@
         app:title="PROFILE PICKER"
         />
 
-    <!-- ImageView be invisible until an action is done?-->
-
-    <!-- Button for 'using picture' be invisible until an action is done?-->
-
+    <!-- Take Photo Button -->
     <Button
         android:id="@+id/PhotoButton"
         android:layout_width="300dp"
@@ -34,12 +34,15 @@
         android:text="Take Photo"
 
         android:textSize="20sp"
+        android:backgroundTint="@color/blue"
+        android:textColor="@color/black"
 
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ImageDisplay" />
 
+    <!-- Open Gallery Button -->
     <Button
         android:id="@+id/FileButton"
         android:layout_width="300dp"
@@ -48,6 +51,8 @@
         android:layout_marginTop="32dp"
         android:text="Select from Gallery"
         android:textSize="20sp"
+        android:backgroundTint="@color/blue"
+        android:textColor="@color/black"
 
         app:layout_constraintEnd_toEndOf="parent"
 
@@ -55,6 +60,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/PhotoButton" />
 
+    <!-- See Image -->
     <ImageView
         android:id="@+id/ImageDisplay"
         android:layout_width="236dp"
@@ -69,22 +75,5 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-
-
-    <!--    <TextView-->
-<!--        android:id = "@+id/banner"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        -->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        -->
-<!--        android:text="PROFILE PICKER"-->
-<!--        android:textAlignment="center"-->
-<!--        android:textSize="32sp"-->
-<!--        -->
-<!--        android:background="@color/white"-->
-<!--        />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
